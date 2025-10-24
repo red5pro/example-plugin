@@ -1,0 +1,29 @@
+# Compiled class files
+target/
+tmp/
+bin/
+*.class
+*.metadata
+
+*.DS_Store
+
+# Package Files
+*.war
+*.ear
+*.log
+
+.project
+.classpath
+.settings/
+.externalToolBuilders/
+.recommenders
+.metadata
+.vscode/
+*.code-workspace
+.idea
+*.iml
+.claude/
+CLAUDE.md
+
+*.KEY
+

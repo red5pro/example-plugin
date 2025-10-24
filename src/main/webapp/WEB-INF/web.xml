@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app version="3.0"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    <!-- Web application name -->
+    <display-name>myapp</display-name>
+    <!-- Context parameter to set the web app root key -->
+    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>/myapp</param-value>
+    </context-param>
+    <!-- MyServlet endpoint -->
+    <servlet>
+        <servlet-name>MyServlet</servlet-name>
+        <servlet-class>com.example.servlet.MyServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MyServlet</servlet-name>
+        <url-pattern>/myservlet</url-pattern>
+    </servlet-mapping>
+</web-app>
