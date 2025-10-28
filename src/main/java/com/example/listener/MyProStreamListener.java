@@ -74,6 +74,23 @@ public class MyProStreamListener implements IStreamListener {
         }
     }
 
+    public MyProStreamListener(IScope scope, String streamName, boolean dumpAV) {
+        // get context path or default to live
+        String contextPath = scope.getContextPath();
+        logger.debug("Context path: {} stream name: {}", contextPath, streamName);
+        // store the scope
+        this.scope = scope;
+        // stream name for file naming etc
+        this.streamName = streamName;
+        // set up a/v dumpers if needed
+        if (dumpAV) {
+            // get a temp dir
+            String tempDir = System.getProperty("java.io.tmpdir", "/tmp");
+            audioDumpWriter = new GenericFileWriter(MediaFile.TYPE_AAC, tempDir, streamName + "_audio_dump");
+            videoDumpWriter = new GenericFileWriter(MediaFile.TYPE_H264, tempDir, streamName + "_video_dump");
+        }
+    }
+
     public void start() {
         logger.debug("Starting MyProStreamListener");
         // get the prostream
@@ -83,6 +100,21 @@ public class MyProStreamListener implements IStreamListener {
             proStream.addStreamListener(this);
             // create a queue processor
             queueProcessorFuture = MyRed5ProPlugin.submit(() -> {
+                logger.debug("Starting packet queue processor for stream: {}", streamName);
+                while (true) {
+                    try {
+                        // take packet from the queue, blocking
+                        IStreamPacket packet = packetQueue.take();
+                        if (packet != null) {
+                            // process the packet
+                            logger.trace("Processing packet from queue: {}", packet);
+                        }
+                    } catch (InterruptedException e) {
+                        logger.debug("Packet queue processor interrupted", e);
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
             });
             // add termination listener to handle cleanup
             proStream.addTerminationEventListener(new ProStreamTerminationEventListener() {
