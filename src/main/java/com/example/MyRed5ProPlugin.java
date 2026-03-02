@@ -1,7 +1,11 @@
 package com.example;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -35,6 +39,11 @@ public class MyRed5ProPlugin extends Red5ProPlugin {
 
     public static final String NAME = "MyRed5ProPlugin";
 
+    // TODO set your plugin properties file name here, and place the file in conf/ with your desired properties
+    private static String pluginPropsFileName = "my-plugin.properties";
+
+    private Properties plugProps = new Properties();
+
     private ScopeListenerAdapter scopeListener;
 
     private PublishAlertHandler publishAlertHandler = new PublishAlertHandler(this);
@@ -47,56 +56,75 @@ public class MyRed5ProPlugin extends Red5ProPlugin {
         // this call matches the name to node in the pom.xml jar plugin definition
         String mfversion = getManifestValue("MyRed5ProPlugin-Version");
         log.info("Starting MyRed5ProPlugin version {}", mfversion);
-        // add scope listener for creation and removal events
-        scopeListener = new ScopeListenerAdapter() {
 
-            @Override
-            public void notifyScopeCreated(IScope scope) {
-                log.debug("Scope created: {}", scope);
-                ScopeType scopeType = scope.getType();
-                // configure the websocket scopes
-                if (scopeType == ScopeType.APPLICATION) {
-                    log.debug("Adding services to application scope: {}", scope);
-                    // TODO configure your application scope services etc here
-
-                    // hook into publish create/start without needing to recreate the live app
-                    MultiThreadedApplicationAdapter adapter = (MultiThreadedApplicationAdapter) scope.getHandler();
-                    if (adapter != null) {
-                        log.debug("Adding hook to fire when a publisher is being set up in scope: {}", scope.getName());
-                        adapter.registerStreamPublishSecurity(publishAlertHandler);
-                    }
-
-                } else if (scopeType == ScopeType.ROOM) {
-                    // TODO configure your room scope services etc here
-
-                }
+        try {
+            // set the properties
+            log.trace("Loading properties");
+            try (InputStream in = Files.newInputStream(Paths.get("conf", pluginPropsFileName))) {
+                plugProps.load(in);
             }
-
-            @Override
-            public void notifyScopeRemoved(IScope scope) {
-                log.trace("Scope removed: {}", scope);
-                ScopeType scopeType = scope.getType();
-                if (scopeType == ScopeType.APPLICATION) {
-                    // TODO perform clean up for things added at create
-
-                    // remove the publish hook
-                    MultiThreadedApplicationAdapter adapter = (MultiThreadedApplicationAdapter) scope.getHandler();
-                    if (adapter != null) {
-                        log.debug("Removing publish hook on scope: {}", scope.getName());
-                        adapter.unregisterStreamPublishSecurity(publishAlertHandler);
-                    }
-
-                } else if (scopeType == ScopeType.ROOM) {
-                    // TODO perform clean up for things added at create
-
-                }
+            if (log.isTraceEnabled()) {
+                log.trace("Properties: {}", plugProps);
             }
+            // check for plugin enabled flag first
+            if (!Boolean.valueOf(plugProps.getProperty("enable", "true"))) {
+                log.info("Plugin disabled");
+                doStopProPlugin();
+                return;
+            }
+            // add scope listener for creation and removal events
+            scopeListener = new ScopeListenerAdapter() {
 
-        };
-        log.debug("Setting server scope listener");
-        server.addListener(scopeListener);
+                @Override
+                public void notifyScopeCreated(IScope scope) {
+                    log.debug("Scope created: {}", scope);
+                    ScopeType scopeType = scope.getType();
+                    // configure the websocket scopes
+                    if (scopeType == ScopeType.APPLICATION) {
+                        log.debug("Adding services to application scope: {}", scope);
+                        // TODO configure your application scope services etc here
+
+                        // hook into publish create/start without needing to recreate the live app
+                        MultiThreadedApplicationAdapter adapter = (MultiThreadedApplicationAdapter) scope.getHandler();
+                        if (adapter != null) {
+                            log.debug("Adding hook to fire when a publisher is being set up in scope: {}", scope.getName());
+                            adapter.registerStreamPublishSecurity(publishAlertHandler);
+                        }
+
+                    } else if (scopeType == ScopeType.ROOM) {
+                        // TODO configure your room scope services etc here
+
+                    }
+                }
+
+                @Override
+                public void notifyScopeRemoved(IScope scope) {
+                    log.trace("Scope removed: {}", scope);
+                    ScopeType scopeType = scope.getType();
+                    if (scopeType == ScopeType.APPLICATION) {
+                        // TODO perform clean up for things added at create
+
+                        // remove the publish hook
+                        MultiThreadedApplicationAdapter adapter = (MultiThreadedApplicationAdapter) scope.getHandler();
+                        if (adapter != null) {
+                            log.debug("Removing publish hook on scope: {}", scope.getName());
+                            adapter.unregisterStreamPublishSecurity(publishAlertHandler);
+                        }
+
+                    } else if (scopeType == ScopeType.ROOM) {
+                        // TODO perform clean up for things added at create
+
+                    }
+                }
+
+            };
+            log.debug("Setting server scope listener");
+            server.addListener(scopeListener);
         // do your plugin startup logic here
 
+        } catch (Throwable t) {
+            log.error("Error on start", t);
+        }
 
         log.info("Plugin started");
     }
@@ -114,6 +142,30 @@ public class MyRed5ProPlugin extends Red5ProPlugin {
     @Override
     public String getName() {
         return MyRed5ProPlugin.NAME;
+    }
+
+    /**
+     * Returns a property matching the given key.
+     *
+     * @param key
+     * @return value or null if no matching entry is available
+        */
+        @Override
+    public String getProperty(String key) {
+        // no props by default here
+        return plugProps.getProperty(key);
+    }
+
+    /**
+     * Returns a property for the given key and if not found, the default value is returned.
+     *
+     * @param key the key
+     * @param defaultValue a default value
+     * @return value or default value if no matching entry is available
+     */
+    @Override
+    public String getProperty(String key, String defaultValue) {
+        return plugProps.getProperty(key, defaultValue);
     }
 
     public boolean addPublisher(IScope scope, String name) {

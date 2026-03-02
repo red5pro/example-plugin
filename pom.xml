@@ -4,7 +4,7 @@
     <!-- Replace with your own groupId/artifactId -->
     <groupId>com.example</groupId>
     <artifactId>example-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <!-- Update these project details accordingly -->
     <name>red5pro-example-plugin</name>
@@ -40,14 +40,14 @@
         <maven.build.timestamp.format>MM.dd.yyyy HH:mm</maven.build.timestamp.format>
         <timestamp>${maven.build.timestamp}</timestamp>
         <finalName>${project.name}-${project.version}</finalName>
-        <red5pro.version>15.0.0</red5pro.version>
+        <red5pro.version>15.2.0</red5pro.version>
         <red5pro-common.version>14.3.0.5</red5pro-common.version>
-        <red5pro-internal.version>15.0.0</red5pro-internal.version>
-        <red5pro-notifications.version>14.3.1</red5pro-notifications.version>
-        <red5.version>2.0.22</red5.version>
-        <spring.version>6.2.10</spring.version>
-        <tomcat.version>11.0.7</tomcat.version>
-        <mina.version>2.0.23</mina.version>
+        <red5pro-internal.version>15.2.0</red5pro-internal.version>
+        <red5pro-notifications.version>15.1.0</red5pro-notifications.version>
+        <red5.version>2.0.29</red5.version>
+        <spring.version>6.2.15</spring.version>
+        <tomcat.version>11.0.15</tomcat.version>
+        <mina.version>2.0.27</mina.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-codec.version>1.17.1</commons-codec.version>
         <commons-collections.version>4.4</commons-collections.version>
@@ -59,7 +59,7 @@
         <httpcomponents.version>4.5.14</httpcomponents.version>
         <gson.version>2.9.0</gson.version>
         <junit.version>4.13.1</junit.version>
-        <bc.version>1.79</bc.version>
+        <bc.version>1.83</bc.version>
         <jcodec.version>0.2.5</jcodec.version>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
